@@ -1,72 +1,79 @@
+
 import java.util.*;
- 
-public class Hamiltonian{
-    static boolean branchNbound(int pos, int x, int g[][], int path[]){
-        if(g[ path[ pos - 1]][x] == 0) return false;
-        for(int i = 0; i < pos; i++){
-            if(path[i] == x) return false;
-        }
-        return true;
-    }
- 
-    static boolean HamCycle(int pos, int g[][], int path[], int n){
- 
-        if(pos == n){
-            if(g[path[pos - 1]][path[0]] == 1)
-                return true;
-            else
-                return false;
-        }
-        for(int x = 1; x < n; x++){
-            boolean nextnode = branchNbound(pos, x, g, path);//see if next node can be added
-            if(nextnode){
-                path[pos] = x;
-                if(HamCycle( pos + 1, g, path, n)){
-                    return true;
-                }else{
-                    path[pos] = -1;
-                }
+// 0 based indexing used
+public class Dijkstra{
+    static int findmin(int visited[],int dist[],int n){
+        int min_indx, min;
+        min_indx = -1;
+        min = 999;
+        for(int i = 0; i < n; i++){
+            if(dist[i] < min  && visited[i] == 0){
+                min = dist[i];
+                min_indx = i;
             }
         }
-       
-        return false;
+        return min_indx;
     }
- 
-    public static void main(String[] args) {
-        int n,source;
-        boolean valid;
-        char ans;
-        Scanner in = new Scanner(System.in);
-        do{
-            System.out.print("\nEnter the number of nodes:\t");
-            n = in.nextInt();
-            int g[][] = new int[n][n];
-            int path[] = new int[n];
-            System.out.print("\nEnter the Adjacency Matrix(0/1):\n\n");
-            for(int i = 0; i < n; i++){
-                for(int j = 0 ; j < n; j++){
-                    g[i][j] = in.nextInt();
-                }
-            }
-            for(int i = 0; i < n; i++){
-                source = i;
-                valid = HamCycle(source + 1,g,path,n);
-                if(valid){
-                    System.out.print("\nHamiltonian cylce for source node "+source+":\n\n");//replace 0 by i
-                    for (int j = 0; j < n; j++) {
-                        System.out.print(path[j] + " ");
+    static void dijkstra(int source, int cost[][],int n){
+        int [] parent,visited,dist;//all are arrays
+        dist = new int[n];
+        parent = new int[n];
+        visited = new int[n];
+        int u,v;
+        for(int i = 0; i < n; i++){
+            visited[i] = parent[i] = 0;
+            dist[i] = 999;
+        }
+        dist[source] = 0;
+        for(int i = 0; i < n; i++){
+            u = findmin(visited, dist, n);
+            if(u == -1) break;
+            for(int j = 0; j < n; j++){
+                if(visited[j] == 0 && cost[u][j] != 999){
+                    if(dist[j] > (dist[u] + cost[u][j])){
+                        dist[j] = (dist[u] + cost[u][j]);
+                        parent[j] = u;
                     }
-                    System.out.print(path[0]);
-                }else{
-                    System.out.print("\nHamiltonian cylce for source node doesn't exist!");
                 }
- 
-                System.out.print("\n");
+            }            
+        }
+        for(int i = 0; i < n; i++){
+            if(dist[i] == 999){
+                System.out.print("\nNo Path from source "+ source +" to "+i);
+            }else{
+                System.out.print("\nThe cost of path from "+source+" to "+ i+" is:" + dist[i]);
             }
-           
-            System.out.print("\nEnter another graph?(Y/n):\t");
-            ans = in.next().charAt(0);
+        }
  
-        }while(ans == 'Y' || ans == 'y');
+        for(int i = 0; i < n; i++){
+            if(i != source && dist[i] != 999){
+                System.out.print("\nPath to "+i+"\n\n");
+                System.out.print(i);
+                v = parent[i];
+                while(v != source){
+                    System.out.print(" <--- " + v);
+                    v = parent[v];
+                }
+                System.out.print(" <--- "+source);
+            }
+            System.out.print("\n\n");
+        }
+ 
+    }
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        int n, source;
+        System.out.print("\nEnter the number of nodes:\t");
+        n = in.nextInt();
+        int cost[][] = new int[n][n];
+        System.out.print("\nEnter the cost matrix(999 for n edge):\n\n");
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < n; j++){
+                cost[i][j] = in.nextInt();
+            }
+        }
+        System.out.print("\nEnter source:\t");
+        source = in.nextInt();
+        dijkstra(source, cost, n);
     }
 }
